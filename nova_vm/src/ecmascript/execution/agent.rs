@@ -75,6 +75,10 @@ impl GcAgent {
     }
 
     pub fn gc(&mut self) {
+        if self.agent.options.disable_gc {
+            // GC is disabled; no-op
+            return;
+        }
         heap_gc(&mut self.agent.heap, &mut self.root_realms);
     }
 }
