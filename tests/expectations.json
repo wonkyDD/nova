@@ -5009,7 +5009,7 @@
   "built-ins/Object/create/15.2.3.5-4-303.js": "FAIL",
   "built-ins/Object/create/15.2.3.5-4-311.js": "FAIL",
   "built-ins/Object/create/15.2.3.5-4-35.js": "CRASH",
-  "built-ins/Object/create/15.2.3.5-4-39.js": "CRASH",
+  "built-ins/Object/create/15.2.3.5-4-39.js": "FAIL",
   "built-ins/Object/create/15.2.3.5-4-40.js": "FAIL",
   "built-ins/Object/create/15.2.3.5-4-66.js": "CRASH",
   "built-ins/Object/create/15.2.3.5-4-91.js": "CRASH",

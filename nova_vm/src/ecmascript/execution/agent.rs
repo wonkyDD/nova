@@ -67,7 +67,7 @@ impl GcAgent {
         }
     }
 
-    pub fn with<F, R>(& mut self, func: F) -> R
+    pub fn with<F, R>(&mut self, func: F) -> R
     where
         F: for<'agent> FnOnce(&'agent mut Agent, &'agent mut Vec<RealmIdentifier>) -> R,
     {
