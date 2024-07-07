@@ -52,15 +52,17 @@ pub trait HostHooks: std::fmt::Debug {
     fn host_has_source_text_available(&self, func: Function) -> bool;
 }
 
-pub struct BoxedAgent {
-    agent: Box<Agent>,
+/// Owned ECMAScript Agent that can be used to run code but also to run garbage
+/// collection on the Agent heap.
+pub struct GcAgent {
+    agent: Agent,
     root_realms: Vec<RealmIdentifier>,
 }
 
-impl BoxedAgent {
+impl GcAgent {
     pub fn new(options: Options, host_hooks: &'static dyn HostHooks) -> Self {
         Self {
-            agent: Box::new(Agent::new(options, host_hooks)),
+            agent: Agent::new(options, host_hooks),
             root_realms: Vec::with_capacity(1),
         }
     }
