@@ -41,7 +41,7 @@ use crate::{
 
 use super::{
     instructions::Instr,
-    iterator::{ObjectPropertiesIterator, VmIterator},
+    iterator::{ArrayValuesIterator, ObjectPropertiesIterator, VmIterator},
     Executable, Instruction, InstructionIter,
 };
 
@@ -902,6 +902,40 @@ impl Vm {
                         object,
                     )))
             }
+            Instruction::GetIteratorSync => {
+                let expr_value = vm.result.take().unwrap();
+                // a. Let method be ? GetMethod(obj, %Symbol.iterator%).
+                let method = get_method(
+                    agent,
+                    expr_value,
+                    PropertyKey::Symbol(WellKnownSymbolIndexes::Iterator.into()),
+                )?;
+                let Some(method) = method else {
+                    // 3. If method is undefined, throw a TypeError exception.
+                    return Err(agent.throw_exception(
+                        ExceptionType::TypeError,
+                        "Iterator method cannot be undefined",
+                    ));
+                };
+                // 4. Return ? GetIteratorFromMethod(obj, method).
+                if let (Value::Array(array), true) = (
+                    expr_value,
+                    method
+                        == agent
+                            .current_realm()
+                            .intrinsics()
+                            .array_prototype_values()
+                            .into_function(),
+                ) {
+                    vm.iterator_stack
+                        .push(VmIterator::ArrayValues(ArrayValuesIterator::new(array)));
+                } else {
+                    todo!();
+                }
+            }
+            Instruction::GetIteratorAsync => {
+                todo!();
+            }
             Instruction::IteratorComplete => {
                 if vm.result.is_none() {
                     vm.ip = instr.args[0].unwrap() as usize;
@@ -929,6 +963,18 @@ impl Vm {
                         } else {
                             vm.iterator_stack.pop();
                             vm.result = None;
+                        }
+                    }
+                    VmIterator::ArrayValues(iter) => {
+                        let result = iter.next(agent);
+                        if result.is_err() {
+                            vm.iterator_stack.pop();
+                            result?;
+                        }
+                        let result = result.unwrap();
+                        vm.result = result;
+                        if result.is_none() {
+                            vm.iterator_stack.pop();
                         }
                     }
                 }
