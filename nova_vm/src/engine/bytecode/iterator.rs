@@ -5,7 +5,9 @@
 use std::collections::VecDeque;
 
 use crate::ecmascript::{
-    abstract_operations::operations_on_objects::get,
+    abstract_operations::{
+        operations_on_iterator_objects::IteratorRecord, operations_on_objects::get,
+    },
     builtins::Array,
     execution::{Agent, JsResult},
     types::{InternalMethods, Object, PropertyKey, Value},
@@ -15,6 +17,7 @@ use crate::ecmascript::{
 pub(super) enum VmIterator {
     ObjectProperties(ObjectPropertiesIterator),
     ArrayValues(ArrayValuesIterator),
+    GenericIterator(IteratorRecord),
 }
 
 #[derive(Debug)]

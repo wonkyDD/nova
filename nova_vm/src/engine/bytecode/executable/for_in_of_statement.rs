@@ -114,13 +114,13 @@ fn for_in_of_body_evaluation(
     ctx: &mut CompileContext,
     lhs: &ast::ForStatementLeft<'_>,
     stmt: &ast::Statement<'_>,
-    _iteration_kind: IterationKind,
+    iteration_kind: IterationKind,
     lhs_kind: LeftHandSideKind,
     _label_set: (),
     _iterator_kind: Option<IteratorKind>,
 ) {
     // 1. If iteratorKind is not present, set iteratorKind to SYNC.
-    let _iterator_kind = _iterator_kind.unwrap_or(IteratorKind::Sync);
+    let iterator_kind = _iterator_kind.unwrap_or(IteratorKind::Sync);
     // 2. Let oldEnv be the running execution context's LexicalEnvironment.
     // 3. Let V be undefined.
     ctx.exe
@@ -297,12 +297,22 @@ fn for_in_of_body_evaluation(
         ctx.exe.set_jump_target_here(break_entry);
     }
     // i. If iterationKind is ENUMERATE, then
-    // 1. Return ? UpdateEmpty(result, V).
-    // ii. Else,
-    // 1. Assert: iterationKind is ITERATE.
-    // 2. Set status to Completion(UpdateEmpty(result, V)).
-    // 3. If iteratorKind is ASYNC, return ? AsyncIteratorClose(iteratorRecord, status).
-    // 4. Return ? IteratorClose(iteratorRecord, status).
+    if iteration_kind == IterationKind::Enumerate {
+        // 1. Return ? UpdateEmpty(result, V).
+        // TODO: This is probably a no-op.
+    } else {
+        // ii. Else,
+        // 1. Assert: iterationKind is ITERATE.
+        assert_eq!(iteration_kind, IterationKind::Iterate);
+        // 2. Set status to Completion(UpdateEmpty(result, V)).
+        // 3. If iteratorKind is ASYNC, return ? AsyncIteratorClose(iteratorRecord, status).
+        if iterator_kind == IteratorKind::Async {
+            ctx.exe.add_instruction(Instruction::AsyncIteratorClose);
+        } else {
+            // 4. Return ? IteratorClose(iteratorRecord, status).
+            ctx.exe.add_instruction(Instruction::IteratorClose);
+        }
+    }
     // m. If result.[[Value]] is not EMPTY, set V to result.[[Value]].
 }
 
